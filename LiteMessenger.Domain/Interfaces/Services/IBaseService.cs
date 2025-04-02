@@ -1,10 +1,9 @@
-using System;
 using LiteMessenger.Domain.Models;
 
-namespace LiteMessenger.Domain.Interfaces;
+namespace LiteMessenger.Domain.Interfaces.Services;
 
 public interface IBaseService<T>
-    where T : BaseEntity
+    where T : class
 {
     Task<T?> GetAsync(string id);
     Task<IEnumerable<T>> GetAllAsync();

@@ -1,0 +1,21 @@
+{
+  "name": "litemessenger",
+  "version": "1.0.0",
+  "description": "",
+  "scripts": {
+    "migration:add": "~/.dotnet/tools/dotnet-ef migrations add $npm_config_migration_name --project ./LiteMessenger.Application/ --startup-project LiteMessenger.Api/",
+    "migration:update": "~/.dotnet/tools/dotnet-ef database update --project ./LiteMessenger.Application/ --startup-project LiteMessenger.Api/",
+    "migration:remove": "~/.dotnet/tools/dotnet-ef migrations remove --project ./LiteMessenger.Application/ --startup-project LiteMessenger.Api/"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/vitormcampos/litemessenger.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/vitormcampos/litemessenger/issues"
+  },
+  "homepage": "https://github.com/vitormcampos/litemessenger#readme"
+}

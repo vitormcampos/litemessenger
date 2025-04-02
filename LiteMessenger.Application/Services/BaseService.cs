@@ -1,18 +1,13 @@
-using LiteMessenger.Domain.Interfaces;
+using LiteMessenger.Domain.Interfaces.Services;
 using LiteMessenger.Domain.Models;
 using Microsoft.EntityFrameworkCore;
 
 namespace LiteMessenger.Application.Services;
 
-public class BaseService<T> : IBaseService<T>
-    where T : BaseEntity
+public abstract class BaseService<T>(LiteMessengerContext context) : IBaseService<T>
+    where T : class
 {
-    public LiteMessengerContext context { get; }
-
-    public BaseService(LiteMessengerContext context)
-    {
-        this.context = context;
-    }
+    public LiteMessengerContext context { get; } = context;
 
     public async Task<T> CreateAsync(T entity)
     {
@@ -24,7 +19,7 @@ public class BaseService<T> : IBaseService<T>
 
     public async Task DeleteAsync(string id)
     {
-        var entity = await context.Set<T>().FirstOrDefaultAsync(r => r.Id == id);
+        var entity = await context.Set<T>().FindAsync(id);
 
         if (entity != null)
             context.Remove(entity);
@@ -39,7 +34,7 @@ public class BaseService<T> : IBaseService<T>
 
     public async Task<T?> GetAsync(string id)
     {
-        return await context.Set<T>().FirstOrDefaultAsync(r => r.Id == id);
+        return await context.Set<T>().FindAsync(id);
     }
 
     public async Task UpdateAsync(T entity)

@@ -5,8 +5,8 @@ public sealed record User(
     string? Email,
     string? Password,
     string? Name,
-    string? Status,
+    int Status,
     string? ProfilePictureUrl,
     DateTime? RegistrationDate,
     DateTime? LastLoginDate
-) : BaseEntity(Id);
+);
