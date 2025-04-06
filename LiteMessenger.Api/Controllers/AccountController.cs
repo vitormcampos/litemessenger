@@ -13,4 +13,15 @@ public class Account(IUserService userService) : ControllerBase
     {
         await userService.Register(userRegister);
     }
+
+    [HttpPost("login")]
+    public async Task<IActionResult> Login([FromBody] LoginRequest userLogin)
+    {
+        var token = await userService.Login(userLogin);
+        if (token == null)
+        {
+            return Unauthorized();
+        }
+        return Ok(token);
+    }
 }

@@ -1,22 +1,32 @@
 using LiteMessenger.Domain.Dtos.User;
 using LiteMessenger.Domain.Interfaces.Services;
 using LiteMessenger.Domain.Models;
+using Microsoft.EntityFrameworkCore;
 
 namespace LiteMessenger.Application.Services;
 
 public class UserService : BaseService<User>, IUserService
 {
-    public UserService(LiteMessengerContext context)
-        : base(context) { }
+    public readonly IAuthService authService;
 
-    public Task Login()
+    public UserService(LiteMessengerContext context, IAuthService authService)
+        : base(context)
     {
-        throw new NotImplementedException();
+        this.authService = authService;
     }
 
-    public Task Logout()
+    public async Task<string> Login(LoginRequest loginRequest)
     {
-        throw new NotImplementedException();
+        var user = await context.Users.FirstOrDefaultAsync(u =>
+            u.Email == loginRequest.Email && u.Password == loginRequest.Password
+        );
+
+        if (user is not null)
+        {
+            return authService.GenerateJwtToken(user);
+        }
+
+        throw new Exception("Usuário ou senha inválidos.");
     }
 
     public async Task Register(UserRegister userRegister)
