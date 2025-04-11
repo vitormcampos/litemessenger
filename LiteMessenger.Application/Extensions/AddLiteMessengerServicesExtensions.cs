@@ -13,12 +13,10 @@ public static class AddLiteMessengerServicesExtension
 {
     public static IServiceCollection AddLiteMessengerServices(this IServiceCollection services)
     {
-        // get IConfiguration from builder
         var configuration = services.BuildServiceProvider().GetRequiredService<IConfiguration>();
 
         // TODO: Alterar connection string para .env
-        var connectionString =
-            "server=localhost;database=lite_messenger;user=root;password=dev123;";
+        var connectionString = configuration.GetConnectionString("LiteMessengerDb");
         services.AddDbContext<LiteMessengerContext>(config =>
         {
             config.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString));

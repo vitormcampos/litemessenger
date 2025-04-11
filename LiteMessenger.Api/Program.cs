@@ -2,6 +2,8 @@ using LiteMessenger.Application.Extensions;
 
 var builder = WebApplication.CreateBuilder(args);
 
+DotNetEnv.Env.Load(".env");
+
 // Add services to the container.
 
 builder.Services.AddControllers();
@@ -52,6 +54,15 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
+
+app.UseCors(options =>
+{
+    var frontendUrl = app.Configuration["FrontendUrl"];
+    if (!string.IsNullOrEmpty(frontendUrl))
+    {
+        options.WithOrigins(frontendUrl).AllowAnyMethod().AllowAnyHeader();
+    }
+});
 
 app.UseHttpsRedirection();
 
