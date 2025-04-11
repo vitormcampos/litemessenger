@@ -1,6 +1,5 @@
 <Solution>
   <Project Path="LiteMessenger.Api/LiteMessenger.Api.csproj" />
-  <Project Path="LiteMessenger.App/LiteMessenger.App.csproj" />
   <Project Path="LiteMessenger.Application/LiteMessenger.Application.csproj" />
   <Project Path="LiteMessenger.Domain/LiteMessenger.Domain.csproj" />
 </Solution>
