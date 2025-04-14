@@ -1,3 +1,4 @@
+using LiteMessenger.Api.Middlewares;
 using LiteMessenger.Application.Extensions;
 
 DotNetEnv.Env.Load(".env");
@@ -70,5 +71,7 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
+
+app.UseMiddleware<ExceptionHandler>();
 
 app.Run();

@@ -1,4 +1,5 @@
 using LiteMessenger.Domain.Dtos.User;
+using LiteMessenger.Domain.Exceptions;
 using LiteMessenger.Domain.Interfaces.Services;
 using LiteMessenger.Domain.Models;
 using Microsoft.EntityFrameworkCore;
@@ -26,17 +27,22 @@ public class UserService : BaseService<User>, IUserService
             return authService.GenerateJwtToken(user);
         }
 
-        throw new Exception("Usuário ou senha inválidos.");
+        throw new RegisterNotFoundException("Usuário ou senha inválidos.");
     }
 
     public async Task Register(UserRegister userRegister)
     {
         var (userName, email, password, _) = userRegister;
 
-        // TODO: Trabalar com Exceptions customizadas
+        var existingUser = await context.Users.FirstOrDefaultAsync(u => u.Email == email);
+        if (existingUser is not null)
+        {
+            throw new ValidationException("Email já cadastrado.");
+        }
+
         if (!userRegister.PasswordIsValid())
         {
-            throw new Exception("Senha informada é inválida");
+            throw new ValidationException("Senha informada é inválida");
         }
 
         // TODO: Encriptar password
