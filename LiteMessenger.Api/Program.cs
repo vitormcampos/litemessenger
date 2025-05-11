@@ -1,5 +1,9 @@
+using System.Text;
+using LiteMessenger.Api.Hubs;
 using LiteMessenger.Api.Middlewares;
 using LiteMessenger.Application.Extensions;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
 
 DotNetEnv.Env.Load(".env");
 
@@ -45,6 +49,54 @@ builder.Services.AddSwaggerGen(options =>
     );
 });
 
+// Config JWT
+var jwtSettings = builder.Configuration.GetSection("Jwt");
+
+var key = Encoding.ASCII.GetBytes(jwtSettings["Key"]!);
+
+builder
+    .Services.AddAuthentication(opt =>
+    {
+        opt.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+        opt.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+    })
+    .AddJwtBearer(
+        JwtBearerDefaults.AuthenticationScheme,
+        opt =>
+        {
+            opt.TokenValidationParameters = new TokenValidationParameters
+            {
+                ValidateIssuer = true,
+                ValidateAudience = true,
+                ValidateLifetime = true,
+                ValidateIssuerSigningKey = true,
+                ValidIssuer = jwtSettings["Issuer"],
+                ValidAudience = jwtSettings["Audience"],
+                IssuerSigningKey = new SymmetricSecurityKey(key),
+            };
+
+            opt.Events = new JwtBearerEvents
+            {
+                OnMessageReceived = context =>
+                {
+                    // Permite pegar o token da QueryString para WebSocket
+                    var accessToken = context.Request.Query["access_token"];
+
+                    Console.WriteLine(accessToken);
+
+                    if (!string.IsNullOrEmpty(accessToken))
+                    {
+                        context.Token = accessToken;
+                    }
+                    return Task.CompletedTask;
+                },
+            };
+        }
+    );
+
+builder.Services.AddAuthorization();
+builder.Services.AddSignalR();
+
 builder.Services.AddLiteMessengerServices();
 
 var app = builder.Build();
@@ -61,7 +113,15 @@ app.UseCors(options =>
     var frontendUrl = app.Configuration["FrontendUrl"];
     if (!string.IsNullOrEmpty(frontendUrl))
     {
-        options.WithOrigins(frontendUrl).AllowAnyMethod().AllowAnyHeader();
+        Console.WriteLine($"frontend: {frontendUrl}");
+        options
+            .SetIsOriginAllowed(url =>
+            {
+                return url == frontendUrl;
+            })
+            .AllowAnyMethod()
+            .AllowAnyHeader()
+            .AllowCredentials();
     }
 });
 
@@ -73,5 +133,7 @@ app.UseAuthorization();
 app.MapControllers();
 
 app.UseMiddleware<ExceptionHandler>();
+
+app.MapHub<ChatHub>("/chats");
 
 app.Run();

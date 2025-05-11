@@ -6,15 +6,10 @@ using Microsoft.EntityFrameworkCore;
 
 namespace LiteMessenger.Application.Services;
 
-public class UserService : BaseService<User>, IUserService
+public class UserService(LiteMessengerContext context, IAuthService authService) : IUserService
 {
-    public readonly IAuthService authService;
-
-    public UserService(LiteMessengerContext context, IAuthService authService)
-        : base(context)
-    {
-        this.authService = authService;
-    }
+    private readonly LiteMessengerContext context = context;
+    private readonly IAuthService authService = authService;
 
     public async Task<string> Login(LoginRequest loginRequest)
     {
@@ -59,6 +54,21 @@ public class UserService : BaseService<User>, IUserService
             LastLoginDate: null
         );
 
-        await CreateAsync(user);
+        await context.Users.AddAsync(user);
+        await context.SaveChangesAsync();
+    }
+
+    public async Task ChangeStatusTo(string UserId, int Status)
+    {
+        var user = await context.Users.FirstOrDefaultAsync(user => user.Id == UserId);
+
+        if (user is null)
+            return;
+
+        var userStatusUpdate = user with { Status = Status };
+
+        context.Users.Update(userStatusUpdate);
+
+        await context.SaveChangesAsync();
     }
 }

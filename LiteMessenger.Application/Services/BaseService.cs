@@ -7,8 +7,6 @@ namespace LiteMessenger.Application.Services;
 public abstract class BaseService<T>(LiteMessengerContext context) : IBaseService<T>
     where T : class
 {
-    public LiteMessengerContext context { get; } = context;
-
     public async Task<T> CreateAsync(T entity)
     {
         await context.Set<T>().AddAsync(entity);
