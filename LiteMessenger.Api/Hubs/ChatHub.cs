@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.SignalR;
 
 namespace LiteMessenger.Api.Hubs;
 
-// [Authorize]
+[Authorize]
 public class ChatHub(IUserService userService) : Hub
 {
     private readonly IUserService userService = userService;
@@ -22,6 +22,8 @@ public class ChatHub(IUserService userService) : Hub
 
         var userId = Context.User?.FindFirst("sub")?.Value; // ou outro claim que você quiser
         var userName = Context.User?.Identity?.Name;
+
+        Console.WriteLine(Context.User.Identity.IsAuthenticated);
 
         Console.WriteLine($"Usuário conectado: {userName} (ID: {userId})");
 

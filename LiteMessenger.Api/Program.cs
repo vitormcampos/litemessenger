@@ -11,8 +11,6 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 
-builder.Services.AddControllers();
-
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(options =>
@@ -50,51 +48,58 @@ builder.Services.AddSwaggerGen(options =>
 });
 
 // Config JWT
-var jwtSettings = builder.Configuration.GetSection("Jwt");
-
-var key = Encoding.ASCII.GetBytes(jwtSettings["Key"]!);
-
 builder
-    .Services.AddAuthentication(opt =>
+    .Services.AddAuthentication(options =>
     {
-        opt.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-        opt.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+        options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+        options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
     })
-    .AddJwtBearer(
-        JwtBearerDefaults.AuthenticationScheme,
-        opt =>
+    .AddJwtBearer(options =>
+    {
+        var key = Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]!);
+
+        options.RequireHttpsMetadata = false;
+        options.SaveToken = true;
+        options.TokenValidationParameters = new()
         {
-            opt.TokenValidationParameters = new TokenValidationParameters
-            {
-                ValidateIssuer = true,
-                ValidateAudience = true,
-                ValidateLifetime = true,
-                ValidateIssuerSigningKey = true,
-                ValidIssuer = jwtSettings["Issuer"],
-                ValidAudience = jwtSettings["Audience"],
-                IssuerSigningKey = new SymmetricSecurityKey(key),
-            };
+            ValidateIssuer = true,
+            ValidateAudience = true,
+            ValidIssuer = builder.Configuration["Jwt:Issuer"],
+            ValidAudience = builder.Configuration["Jwt:Audience"],
+            IssuerSigningKey = new SymmetricSecurityKey(key),
+        };
 
-            opt.Events = new JwtBearerEvents
+        // Permite autenticação em WebSocket (SignalR)
+        options.Events = new JwtBearerEvents
+        {
+            OnMessageReceived = context =>
             {
-                OnMessageReceived = context =>
+                var accessTokenQuery = context.Request.Query["access_token"];
+                var accessTokenHeader = context
+                    .Request.Headers["Authorization"]
+                    .ToString()
+                    .Replace("Bearer ", "");
+                string? accessToken = string.IsNullOrEmpty(accessTokenQuery)
+                    ? accessTokenHeader
+                    : accessTokenQuery;
+
+                var path = context.HttpContext.Request.Path;
+
+                Console.WriteLine("Path: " + path); // DEBUG
+                if (!string.IsNullOrEmpty(accessToken))
                 {
-                    // Permite pegar o token da QueryString para WebSocket
-                    var accessToken = context.Request.Query["access_token"];
+                    Console.WriteLine("Token recebido via WebSocket: " + accessToken); // DEBUG
 
-                    Console.WriteLine(accessToken);
-
-                    if (!string.IsNullOrEmpty(accessToken))
-                    {
-                        context.Token = accessToken;
-                    }
-                    return Task.CompletedTask;
-                },
-            };
-        }
-    );
+                    context.Token = accessToken;
+                }
+                return Task.CompletedTask;
+            },
+        };
+    });
 
 builder.Services.AddAuthorization();
+
+builder.Services.AddControllers();
 builder.Services.AddSignalR();
 
 builder.Services.AddLiteMessengerServices();
@@ -113,7 +118,6 @@ app.UseCors(options =>
     var frontendUrl = app.Configuration["FrontendUrl"];
     if (!string.IsNullOrEmpty(frontendUrl))
     {
-        Console.WriteLine($"frontend: {frontendUrl}");
         options
             .SetIsOriginAllowed(url =>
             {
