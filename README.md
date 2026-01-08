@@ -1,4 +1,4 @@
-# LiteMessenger – Messenger Web Reimaginado
+# LiteMessenger – MSN Messenger Web Reimaginado
 
 LiteMessenger é um projeto backend e frontend desenvolvido em .NET Core (versão 10), com o propósito de recriar de forma reimaginada o antigo MSN Messenger dos anos 2000, totalmente funcional via web.
 
