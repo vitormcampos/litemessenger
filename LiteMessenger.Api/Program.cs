@@ -5,8 +5,6 @@ using LiteMessenger.Application.Extensions;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 
-DotNetEnv.Env.Load(".env");
-
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
@@ -116,17 +114,7 @@ if (app.Environment.IsDevelopment())
 app.UseCors(options =>
 {
     var frontendUrl = app.Configuration["FrontendUrl"];
-    if (!string.IsNullOrEmpty(frontendUrl))
-    {
-        options
-            .SetIsOriginAllowed(url =>
-            {
-                return url == frontendUrl;
-            })
-            .AllowAnyMethod()
-            .AllowAnyHeader()
-            .AllowCredentials();
-    }
+    options.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader();
 });
 
 app.UseHttpsRedirection();

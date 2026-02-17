@@ -71,4 +71,22 @@ public class UserService(LiteMessengerContext context, IAuthService authService)
 
         await context.SaveChangesAsync();
     }
+
+    public async Task<UserResponse?> GetCurrentUser(string userId)
+    {
+        var user = await context.Users.FirstOrDefaultAsync(u => u.Id == userId);
+
+        if (user is null)
+            return null;
+
+        return new UserResponse(
+            user.Id!,
+            user.Email!,
+            user.Name!,
+            user.Status,
+            user.ProfilePictureUrl,
+            user.RegistrationDate,
+            user.LastLoginDate
+        );
+    }
 }

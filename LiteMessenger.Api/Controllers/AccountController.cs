@@ -1,5 +1,7 @@
+using System.IdentityModel.Tokens.Jwt;
 using LiteMessenger.Domain.Dtos.User;
 using LiteMessenger.Domain.Interfaces.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace LiteMessenger.Api.Controllers;
@@ -23,5 +25,24 @@ public class Account(IUserService userService) : ControllerBase
             return Unauthorized();
         }
         return Ok(token);
+    }
+
+    [HttpGet("me")]
+    [Authorize]
+    public async Task<IActionResult> GetCurrentUser()
+    {
+        var userId = User.FindFirst(JwtRegisteredClaimNames.Sub)?.Value;
+        if (string.IsNullOrEmpty(userId))
+        {
+            return Unauthorized();
+        }
+
+        var user = await userService.GetCurrentUser(userId);
+        if (user is null)
+        {
+            return NotFound();
+        }
+
+        return Ok(user);
     }
 }

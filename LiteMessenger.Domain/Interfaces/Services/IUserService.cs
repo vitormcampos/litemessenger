@@ -8,4 +8,5 @@ public interface IUserService
     Task<string> Login(LoginRequest loginRequest);
     Task Register(UserRegister userRegister);
     Task ChangeStatusTo(string UserId, int Status);
+    Task<UserResponse?> GetCurrentUser(string userId);
 }
