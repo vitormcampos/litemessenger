@@ -1,3 +1,4 @@
+using LiteMessenger.Api.Extensions;
 using LiteMessenger.Domain.Interfaces.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;
@@ -18,14 +19,12 @@ public class ChatHub(IUserService userService) : Hub
     // Método chamado quando um cliente se conecta
     public override async Task OnConnectedAsync()
     {
-        //await userService.ChangeStatusTo(Context.User.Identity.Name, 1);
+        var userId = Context.User?.GetUserId();
 
-        var userId = Context.User?.FindFirst("sub")?.Value; // ou outro claim que você quiser
-        var userName = Context.User?.Identity?.Name;
-
-        Console.WriteLine(Context.User.Identity.IsAuthenticated);
-
-        Console.WriteLine($"Usuário conectado: {userName} (ID: {userId})");
+        if (userId is not null)
+        {
+            await userService.ChangeStatusTo(userId, 1);
+        }
 
         await base.OnConnectedAsync();
     }
@@ -33,10 +32,12 @@ public class ChatHub(IUserService userService) : Hub
     // Método chamado quando um cliente se desconecta
     public override async Task OnDisconnectedAsync(Exception? exception)
     {
-        await base.OnDisconnectedAsync(exception);
-        //await userService.ChangeStatusTo(Context.User.Identity.Name, 0);
+        var userId = Context.User?.GetUserId();
+        if (userId is not null)
+        {
+            await userService.ChangeStatusTo(userId ?? string.Empty, 0);
+        }
 
-        Console.WriteLine($"Cliente desconectado: {Context.ConnectionId}");
-        Console.WriteLine($"Cliente desconectado: {Context.User.Identity.Name}");
+        await base.OnDisconnectedAsync(exception);
     }
 }

@@ -13,9 +13,11 @@ public class UserService(LiteMessengerContext context, IAuthService authService)
 
     public async Task<string> Login(LoginRequest loginRequest)
     {
-        var user = await context.Users.FirstOrDefaultAsync(u =>
-            u.Email == loginRequest.Email && u.Password == loginRequest.Password
-        );
+        var user = await context
+            .Users.AsNoTracking()
+            .FirstOrDefaultAsync(u =>
+                u.Email == loginRequest.Email && u.Password == loginRequest.Password
+            );
 
         if (user is not null)
         {
@@ -29,7 +31,9 @@ public class UserService(LiteMessengerContext context, IAuthService authService)
     {
         var (userName, email, password, _) = userRegister;
 
-        var existingUser = await context.Users.FirstOrDefaultAsync(u => u.Email == email);
+        var existingUser = await context
+            .Users.AsNoTracking()
+            .FirstOrDefaultAsync(u => u.Email == email);
         if (existingUser is not null)
         {
             throw new ValidationException("Email já cadastrado.");
@@ -60,21 +64,23 @@ public class UserService(LiteMessengerContext context, IAuthService authService)
 
     public async Task ChangeStatusTo(string UserId, int Status)
     {
-        var user = await context.Users.FirstOrDefaultAsync(user => user.Id == UserId);
+        var user = await context
+            .Users.AsNoTracking()
+            .FirstOrDefaultAsync(user => user.Id == UserId);
 
         if (user is null)
             return;
 
-        var userStatusUpdate = user with { Status = Status };
+        user.UpdateStatus(Status);
 
-        context.Users.Update(userStatusUpdate);
+        context.Users.Update(user);
 
         await context.SaveChangesAsync();
     }
 
     public async Task<UserResponse?> GetCurrentUser(string userId)
     {
-        var user = await context.Users.FirstOrDefaultAsync(u => u.Id == userId);
+        var user = await context.Users.AsNoTracking().FirstOrDefaultAsync(u => u.Id == userId);
 
         if (user is null)
             return null;

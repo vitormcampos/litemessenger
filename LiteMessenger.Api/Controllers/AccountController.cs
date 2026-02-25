@@ -1,4 +1,5 @@
 using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
 using LiteMessenger.Domain.Dtos.User;
 using LiteMessenger.Domain.Interfaces.Services;
 using Microsoft.AspNetCore.Authorization;
@@ -31,7 +32,7 @@ public class Account(IUserService userService) : ControllerBase
     [Authorize]
     public async Task<IActionResult> GetCurrentUser()
     {
-        var userId = User.FindFirst(JwtRegisteredClaimNames.Sub)?.Value;
+        var userId = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Sid)?.Value;
         if (string.IsNullOrEmpty(userId))
         {
             return Unauthorized();

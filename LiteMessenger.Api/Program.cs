@@ -1,9 +1,6 @@
-using System.Text;
 using LiteMessenger.Api.Hubs;
 using LiteMessenger.Api.Middlewares;
 using LiteMessenger.Application.Extensions;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.IdentityModel.Tokens;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -45,57 +42,7 @@ builder.Services.AddSwaggerGen(options =>
     );
 });
 
-// Config JWT
-builder
-    .Services.AddAuthentication(options =>
-    {
-        options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-        options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-    })
-    .AddJwtBearer(options =>
-    {
-        var key = Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]!);
-
-        options.RequireHttpsMetadata = false;
-        options.SaveToken = true;
-        options.TokenValidationParameters = new()
-        {
-            ValidateIssuer = true,
-            ValidateAudience = true,
-            ValidIssuer = builder.Configuration["Jwt:Issuer"],
-            ValidAudience = builder.Configuration["Jwt:Audience"],
-            IssuerSigningKey = new SymmetricSecurityKey(key),
-        };
-
-        // Permite autenticação em WebSocket (SignalR)
-        options.Events = new JwtBearerEvents
-        {
-            OnMessageReceived = context =>
-            {
-                var accessTokenQuery = context.Request.Query["access_token"];
-                var accessTokenHeader = context
-                    .Request.Headers["Authorization"]
-                    .ToString()
-                    .Replace("Bearer ", "");
-                string? accessToken = string.IsNullOrEmpty(accessTokenQuery)
-                    ? accessTokenHeader
-                    : accessTokenQuery;
-
-                var path = context.HttpContext.Request.Path;
-
-                Console.WriteLine("Path: " + path); // DEBUG
-                if (!string.IsNullOrEmpty(accessToken))
-                {
-                    Console.WriteLine("Token recebido via WebSocket: " + accessToken); // DEBUG
-
-                    context.Token = accessToken;
-                }
-                return Task.CompletedTask;
-            },
-        };
-    });
-
-builder.Services.AddAuthorization();
+builder.Services.ConfigureAuthenticationService(builder.Configuration);
 
 builder.Services.AddControllers();
 builder.Services.AddSignalR();

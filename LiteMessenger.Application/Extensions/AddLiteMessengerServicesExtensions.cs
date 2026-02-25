@@ -12,7 +12,6 @@ public static class AddLiteMessengerServicesExtension
     {
         var configuration = services.BuildServiceProvider().GetRequiredService<IConfiguration>();
 
-        // TODO: Alterar connection string para .env
         var connectionString = configuration.GetConnectionString("LiteMessengerDb");
         services.AddDbContext<LiteMessengerContext>(config =>
         {

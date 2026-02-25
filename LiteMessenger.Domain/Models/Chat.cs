@@ -1,3 +1,15 @@
 namespace LiteMessenger.Domain.Models;
 
-public sealed record Chat(string Id, string Name);
+public sealed class Chat
+{
+    public string Id { get; private set; }
+    public string Name { get; private set; }
+
+    public Chat(string id, string name)
+    {
+        Id = id;
+        Name = name;
+    }
+
+    private Chat() { }
+}

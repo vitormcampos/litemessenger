@@ -27,20 +27,20 @@ public class AuthService : IAuthService
         }
 
         var key = Encoding.ASCII.GetBytes(jwtSettings["Key"]!);
+        var expirationDays = int.Parse(jwtSettings["ExpireDays"]!);
 
         var claims = new[]
         {
-            new Claim(JwtRegisteredClaimNames.Sub, user.Id!),
-            new Claim(JwtRegisteredClaimNames.Email, user.Email!),
-            new Claim("name", user.Name!),
-            new Claim("status", user.Status.ToString()),
+            new Claim(ClaimTypes.Sid, user.Id!),
+            new Claim(ClaimTypes.Email, user.Email!),
+            new Claim(ClaimTypes.Name, user.Name!),
         };
 
         var token = new JwtSecurityToken(
             issuer: jwtSettings["Issuer"],
             audience: jwtSettings["Audience"],
             claims: claims,
-            expires: DateTime.UtcNow.AddMinutes(double.Parse(jwtSettings["ExpireMinutes"]!)),
+            expires: DateTime.Now.AddDays(expirationDays),
             signingCredentials: new SigningCredentials(
                 new SymmetricSecurityKey(key),
                 SecurityAlgorithms.HmacSha256
