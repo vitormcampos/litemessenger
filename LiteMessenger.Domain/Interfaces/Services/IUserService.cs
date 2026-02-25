@@ -9,4 +9,5 @@ public interface IUserService
     Task Register(UserRegister userRegister);
     Task ChangeStatusTo(string UserId, int Status);
     Task<UserResponse?> GetCurrentUser(string userId);
+    Task<List<UserResponse>> GetOnlineUsers();
 }

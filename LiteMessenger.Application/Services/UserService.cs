@@ -95,4 +95,23 @@ public class UserService(LiteMessengerContext context, IAuthService authService)
             user.LastLoginDate
         );
     }
+
+    public async Task<List<UserResponse>> GetOnlineUsers()
+    {
+        var onlineUsers = await context
+            .Users.AsNoTracking()
+            .Where(u => u.Status == 1)
+            .Select(u => new UserResponse(
+                u.Id!,
+                u.Email!,
+                u.Name!,
+                u.Status,
+                u.ProfilePictureUrl,
+                u.RegistrationDate,
+                u.LastLoginDate
+            ))
+            .ToListAsync();
+
+        return onlineUsers;
+    }
 }

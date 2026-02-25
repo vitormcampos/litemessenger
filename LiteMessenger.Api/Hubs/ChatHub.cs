@@ -8,8 +8,6 @@ namespace LiteMessenger.Api.Hubs;
 [Authorize]
 public class ChatHub(IUserService userService) : Hub
 {
-    private readonly IUserService userService = userService;
-
     // Método para enviar mensagem para todos os clientes conectados
     public async Task SendMessage(string user, string message)
     {
@@ -26,6 +24,8 @@ public class ChatHub(IUserService userService) : Hub
             await userService.ChangeStatusTo(userId, 1);
         }
 
+        await SendUpdateOnlineUsers();
+
         await base.OnConnectedAsync();
     }
 
@@ -38,6 +38,14 @@ public class ChatHub(IUserService userService) : Hub
             await userService.ChangeStatusTo(userId ?? string.Empty, 0);
         }
 
+        await SendUpdateOnlineUsers();
+
         await base.OnDisconnectedAsync(exception);
+    }
+
+    private async Task SendUpdateOnlineUsers()
+    {
+        var onlineUsers = await userService.GetOnlineUsers();
+        await Clients.All.SendAsync("UpdateOnlineUsers", onlineUsers);
     }
 }
