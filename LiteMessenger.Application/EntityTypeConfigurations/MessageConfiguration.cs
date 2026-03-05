@@ -18,14 +18,12 @@ public class MessageConfiguration : IEntityTypeConfiguration<Message>
 
         builder.Property(m => m.Content).IsRequired().HasMaxLength(1000);
 
-        builder
-            .HasOne(m => m.Chat)
-            .WithMany()
+        builder.HasOne(m => m.Chat)
+            .WithMany(c => c.Messages)
             .HasForeignKey(m => m.ChatId)
             .OnDelete(DeleteBehavior.Cascade);
 
-        builder
-            .HasOne(m => m.User)
+        builder.HasOne(m => m.User)
             .WithMany()
             .HasForeignKey(m => m.UserId)
             .OnDelete(DeleteBehavior.Cascade);

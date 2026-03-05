@@ -6,14 +6,8 @@ using Microsoft.AspNetCore.SignalR;
 namespace LiteMessenger.Api.Hubs;
 
 [Authorize]
-public class ChatHub(IUserService userService) : Hub
+public class UserStatusHub(IUserService userService) : Hub
 {
-    // Método para enviar mensagem para todos os clientes conectados
-    public async Task SendMessage(string user, string message)
-    {
-        await Clients.All.SendAsync("ReceiveMessage", user, message);
-    }
-
     // Método chamado quando um cliente se conecta
     public override async Task OnConnectedAsync()
     {

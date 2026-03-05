@@ -73,6 +73,7 @@ app.MapControllers();
 
 app.UseMiddleware<ExceptionHandler>();
 
-app.MapHub<ChatHub>("/chats");
+app.MapHub<UserStatusHub>("/user-status");
+app.MapHub<MessagesHub>("/messages");
 
 app.Run();

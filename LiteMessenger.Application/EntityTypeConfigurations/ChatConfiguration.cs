@@ -12,6 +12,11 @@ public class ChatConfiguration : IEntityTypeConfiguration<Chat>
 
         builder.Property(c => c.Name).IsRequired().HasMaxLength(200);
 
+        builder.HasMany(c => c.Messages)
+            .WithOne()
+            .HasForeignKey(m => m.ChatId)
+            .OnDelete(DeleteBehavior.Cascade);
+
         builder.ToTable("Chats");
     }
 }
